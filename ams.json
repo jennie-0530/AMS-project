@@ -1,0 +1,6 @@
+[
+  { "number": "123-456", "owner": "강쥐", "password": 1234, "balance": 20000 },
+  { "number": "2222-456", "owner": "강쥐", "password": 1234, "balance": 20000 },
+  { "number": "1", "owner": "1", "password": 1, "balance": 1 },
+  { "number": "2", "owner": "2", "password": 2, "balance": 2 }
+]
