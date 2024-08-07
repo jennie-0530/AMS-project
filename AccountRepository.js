@@ -25,21 +25,24 @@ class AccountRepository {
   }
 
   deposit(num, money) {
-    let index = this.accounts.findIndex((account) => account.number === num);
-    if (index !== -1) {
-      return (this.accounts[index].balance += money);
+    const account = this.findByNumber(num);
+    if (account) {
+      return (account.balance += money);
     } else return false;
   }
 
   withdraw(num, money, password) {
-    let index = this.accounts.findIndex((account) => account.number === num);
-    if (index !== -1) {
-      if (password === this.accounts[index].password) {
-        if (this.accounts[index].balance >= money) {
-          return (this.accounts[index].balance -= money);
-        } else throw new AccountError(200, "잔액이 부족합니다.");
-      } else throw new AccountError(300, "비밀번호가 틀렸습니다.");
-    } else return false;
+    const account = this.findByNumber(num);
+    try {
+      if (!account) return false;
+      if (password !== account.password)
+        throw new Error("비밀번호가 틀렸습니다.");
+      if (account.balance < money) throw new Error("잔액이 부족합니다.");
+      account.balance -= money;
+      return account.balance;
+    } catch (err) {
+      console.log(err.message);
+    }
   }
 
   findByAll() {
@@ -47,8 +50,9 @@ class AccountRepository {
     // * 외부 배열에서 원본 배열에 접근하는 것은 위험하므로 배열의 복사본을 반환해주자.
   }
 
-  findByNumber(number) {
-    return this.accounts.find((account) => account.number === number);
+  findByNumber(num) {
+    let index = this.accounts.findIndex((account) => account.number === num);
+    return this.accounts[index];
   }
 
   findByName(name) {
