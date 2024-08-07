@@ -8,7 +8,6 @@ class AccountRepository {
     this.accounts = []; // this.accounts가 프로퍼티 이름.
   }
 
-  // ^ setter / getter
   set accounts(accounts) {
     this._accounts = accounts;
   }
@@ -38,8 +37,7 @@ class AccountRepository {
       if (password !== account.password)
         throw new Error("비밀번호가 틀렸습니다.");
       if (account.balance < money) throw new Error("잔액이 부족합니다.");
-      account.balance -= money;
-      return account.balance;
+      return (account.balance -= money);
     } catch (err) {
       console.log(err.message);
     }
@@ -47,16 +45,29 @@ class AccountRepository {
 
   findByAll() {
     return [...this.accounts];
-    // * 외부 배열에서 원본 배열에 접근하는 것은 위험하므로 배열의 복사본을 반환해주자.
   }
 
   findByNumber(num) {
     let index = this.accounts.findIndex((account) => account.number === num);
     return this.accounts[index];
+    // deposit, withdraw에서 재사용하기 위해 find 대신 findIndex
   }
 
   findByName(name) {
     return this.accounts.find((account) => account.owner === name);
+  }
+
+  getBalance(num) {
+    const account = this.findByNumber(num);
+    try {
+      if (account) {
+        return account.balance;
+      } else {
+        throw new Error(`입력하신 계좌를 찾을 수 없습니다.`);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   getTotal() {
