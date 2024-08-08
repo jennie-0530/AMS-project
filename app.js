@@ -23,6 +23,10 @@ const printMenu = function () {
     "--------------------------------------------------------------------"
   );
 };
+const accountNumberPattern = /^\d{4}-\d{4}$/;
+const passwordPattern = /^\d{4}$/;
+const moneyPattern = /^\d+$/;
+const ownerPattern = /^[A-Za-z가-힣]+$/;
 
 // * 계좌 등록
 const createAccount = async function () {
@@ -46,25 +50,56 @@ const createAccount = async function () {
     }
   }
 
-  let accountNum = await readLine("- 계좌번호 : ");
-  let accountOwner = await readLine("- 예금주명 : ");
-  let password = parseInt(await readLine("- 비밀번호 : "));
-  let initMoney = parseInt(await readLine("- 입금액 : "));
-  let rentMoney = 0;
+  let accountNum = "";
+  let password = "";
+  let accountOwner = "";
+  let initMoney = "";
+  let rentMoney = "";
+
+  // * 유효성 검사
+  while (!accountNumberPattern.test(accountNum)) {
+    accountNum = await readLine("- 계좌번호 (xxxx-xxxx) : ");
+    if (!accountNumberPattern.test(accountNum)) {
+      console.log(
+        "계좌번호는 '1234-5678'과 같은 형식이어야 합니다. 다시 입력해주세요."
+      );
+    }
+  }
+
+  while (!ownerPattern.test(accountOwner)) {
+    accountOwner = await readLine("- 예금주명 : ");
+    if (!ownerPattern.test(accountOwner)) {
+      console.log("이름은 한글 또는 영어로만 입력해주세요.");
+    }
+  }
+
+  while (!passwordPattern.test(password)) {
+    password = parseInt(await readLine("- 비밀번호 : "));
+    if (!passwordPattern.test(password)) {
+      console.log(
+        "비밀번호는 4자리 숫자 형식이어야 합니다. 다시 입력해주세요."
+      );
+    }
+  }
 
   if (num === 1) {
     // * 입출금 계좌
+    while (!moneyPattern.test(initMoney)) {
+      initMoney = parseInt(await readLine("- 입금액 (0 이상의 숫자) : "));
+      if (!moneyPattern.test(initMoney)) {
+        console.log("입금액은 0 이상의 숫자여야 합니다. 다시 입력해주세요.");
+      }
+    }
     account = new Account(accountNum, accountOwner, password, initMoney);
   } else if (num === 2) {
     // * 마이너스 계좌
-    rentMoney = parseInt(await readLine("- 대출금액 : "));
-    account = new MinusAccount(
-      accountNum,
-      accountOwner,
-      password,
-      initMoney,
-      rentMoney
-    );
+    while (!moneyPattern.test(rentMoney)) {
+      rentMoney = parseInt(await readLine("- 대출 금액 (0 이상의 숫자) : "));
+      if (!moneyPattern.test(rentMoney)) {
+        console.log("대출 금액은 0 이상의 숫자여야 합니다. 다시 입력해주세요.");
+      }
+    }
+    account = new MinusAccount(accountNum, accountOwner, password, rentMoney);
   }
   accountRepository.addAccount(account);
   console.log("계좌가 등록되었습니다.");
@@ -77,15 +112,26 @@ const printAllAccounts = function () {
     console.log("등록된 계좌가 없습니다.");
     return;
   }
-  console.log("-------------------------------------------------------");
-  console.log("계좌구분 \t 계좌번호 \t 예금주 \t 잔액");
-  console.log("-------------------------------------------------------");
+  console.log(
+    "--------------------------------------------------------------------"
+  );
+  console.log("계좌구분\t계좌번호\t예금주\t금액정보\t");
+  console.log(
+    "--------------------------------------------------------------------"
+  );
   accounts.forEach((account) => {
     const type =
       account instanceof MinusAccount ? "마이너스 계좌" : "입출금 계좌";
-    console.log(
-      `${type} \t ${account.number} \t ${account.owner} \t ${account.balance}`
-    );
+
+    if (type === "마이너스 계좌") {
+      console.log(
+        `${type}\t${account.number}\t${account.owner}\t대출금액: ${account.rentMoney}원`
+      );
+    } else {
+      console.log(
+        `${type}\t${account.number}\t${account.owner}\t계좌잔액: ${account.balance}원`
+      );
+    }
   });
 };
 
@@ -96,9 +142,13 @@ const deposit = async function () {
   let inputMoney = parseInt(await readLine("- 입금액 : "));
   accountRepository.deposit(inputNum, inputMoney);
   let balance = accountRepository.getBalance(inputNum);
-  console.log(
-    `${inputNum}원이 입금되었습니다. 현재 잔고는 ${balance}원입니다.`
-  );
+  if (balance !== null) {
+    console.log(
+      `${inputNum}원이 입금되었습니다. 현재 잔고는 ${balance}원입니다.`
+    );
+  } else {
+    console.log("입력하신 계좌 번호를 찾을 수 없습니다.");
+  }
 };
 
 // * 출금
@@ -106,30 +156,70 @@ const withdraw = async function () {
   let outputNum = await readLine("- 계좌번호 : ");
   let outputMoney = parseInt(await readLine("- 출금액 : "));
   let outputPassword = parseInt(await readLine("- 비밀번호 : "));
-  let result = accountRepository.withdraw(
+  let statusCode = accountRepository.withdraw(
     outputNum,
     outputMoney,
     outputPassword
   );
-  console.log(`${result}원이 출금되었습니다.`);
+  let balance = accountRepository.getBalance(outputNum);
+
+  switch (statusCode) {
+    case "ACCOUNT_NOT_FOUND":
+      console.log("입력하신 계좌를 찾을 수 없습니다.");
+      break;
+    case "INSUFFICIENT_BALANCE":
+      console.log("잔액이 부족합니다.");
+      break;
+    case "INVALID_PASSWORD":
+      console.log("비밀번호가 틀렸습니다.");
+      break;
+    case "SUCCESS":
+      console.log(
+        `${outputMoney}원이 출금되었습니다. 현재 잔고는 ${balance}원입니다.`
+      );
+  }
 };
 
 // * 계좌번호로 검색
 const searchNum = async function () {
   let searchNum = await readLine("- 계좌번호 : ");
   console.log(searchNum);
-  console.log("검색 결과 출력");
-  console.log(accountRepository.findByNumber(searchNum));
+  let account = accountRepository.findByNumber(searchNum);
+  if (!account) {
+    console.log("입력하신 계좌를 찾을 수 없습니다.");
+  } else {
+    console.log(`계좌번호: ${account.number}`);
+    console.log(`예금주: ${account.owner}`);
+    console.log(`잔액: ${account.balance}원`);
+  }
+
+  if (account instanceof MinusAccount) {
+    console.log(`대출금액: ${account.rentMoney}원`);
+  }
 };
 
 // * 계좌 삭제
 const deleteAccount = async function () {
   console.log("계좌 삭제");
-  // 계좌 번호 입력 받아 계좌 해당 계좌 삭제
   let deleteNum = await readLine("- 계좌번호 : ");
-  accountRepository.deleteAccount(deleteNum);
-  console.log("삭제 이후 결과 출력");
-  printAllAccounts();
+  let deletePassword = parseInt(await readLine("- 비밀번호 : "));
+  let statusCode = accountRepository.deleteAccount(deleteNum, deletePassword);
+
+  while (statusCode === "INVALID_PASSWORD") {
+    console.log("비밀번호가 틀렸습니다. 다시 입력해주세요.");
+    deletePassword = parseInt(await readLine("- 비밀번호 : "));
+    statusCode = accountRepository.deleteAccount(deleteNum, deletePassword);
+  }
+
+  switch (statusCode) {
+    case "ACCOUNT_NOT_FOUND":
+      console.log("입력하신 계좌를 찾을 수 없습니다.");
+      break;
+    case "SUCCESS":
+      console.log("계좌가 정상적으로 삭제되었습니다.");
+      console.log("현재 계좌 목록");
+      printAllAccounts();
+  }
 };
 
 // * 어플리케이션 종료

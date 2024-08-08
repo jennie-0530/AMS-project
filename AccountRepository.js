@@ -20,6 +20,7 @@ class AccountRepository {
       this.accounts.push(account);
       return true;
     }
+    1;
     return false;
   }
 
@@ -32,17 +33,32 @@ class AccountRepository {
 
   withdraw(num, money, password) {
     const account = this.findByNumber(num);
-    try {
-      if (!account) return false;
-      if (password !== account.password)
-        throw new Error("비밀번호가 틀렸습니다.");
-      if (account.balance < money) throw new Error("잔액이 부족합니다.");
-      return (account.balance -= money);
-    } catch (err) {
-      console.log(err.message);
-    }
-  }
 
+    if (!account) {
+      return "ACCOUNT_NOT_FOUND";
+    }
+    if (account.balance < money) {
+      return "INSUFFICIENT_BALANCE";
+    }
+    if (password !== account.password) {
+      return "INVALID_PASSWORD";
+    }
+    account.balance -= money;
+    return "SUCCESS";
+  }
+  deleteAccount(num, password) {
+    let index = this.accounts.findIndex((account) => num === account.number);
+    let account = this.findByNumber(num);
+    if (index === -1) {
+      return "ACCOUNT_NOT_FOUND";
+    }
+
+    if (password !== account.password) {
+      return "INVALID_PASSWORD";
+    }
+    this.accounts.splice(index, 1);
+    return "SUCCESS";
+  }
   findByAll() {
     return [...this.accounts];
   }
@@ -63,10 +79,11 @@ class AccountRepository {
       if (account) {
         return account.balance;
       } else {
-        throw new Error(`입력하신 계좌를 찾을 수 없습니다.`);
+        return null;
       }
     } catch (err) {
       console.log(err);
+      return null;
     }
   }
 
@@ -81,8 +98,8 @@ class AccountRepository {
   getMax() {
     let max = this.accounts.reduce(
       (prev, account) => (prev > account.balance ? prev : account.balance),
-      0
-    ); // 최댓값을 가진 계좌가 마이너스 계좌일 수도 있는데 0으로 초기화해도 되나?
+      this.accounts[0].balance
+    );
     return max;
   }
 
@@ -105,14 +122,6 @@ class AccountRepository {
     let result = this.accounts.find((account) => name1 === account.owner);
     result.owner = name2;
     return result;
-  }
-
-  deleteAccount(number) {
-    let index = this.accounts.findIndex((account) => number === account.number);
-    if (index != -1) {
-      return this.accounts.splice(index, 1);
-    }
-    return null;
   }
 }
 
