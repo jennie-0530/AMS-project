@@ -11,6 +11,8 @@ const consoleInterface = createInterface({
 });
 let accountRepository = new AccountRepository();
 
+// TODO 마이너스 계좌에 입금, 출금하면 어떻게 할지 처리
+
 // 메뉴 출력
 const printMenu = function () {
   console.log(
@@ -121,7 +123,7 @@ const printAllAccounts = function () {
   );
   accounts.forEach((account) => {
     const type =
-      account instanceof MinusAccount ? "마이너스 계좌" : "입출금 계좌";
+      account.rentMoney !== undefined ? "마이너스 계좌" : "입출금 계좌";
 
     if (type === "마이너스 계좌") {
       console.log(
@@ -144,7 +146,7 @@ const deposit = async function () {
   let balance = accountRepository.getBalance(inputNum);
   if (balance !== null) {
     console.log(
-      `${inputNum}원이 입금되었습니다. 현재 잔고는 ${balance}원입니다.`
+      `${inputMoney}원이 입금되었습니다. 현재 잔고는 ${balance}원입니다.`
     );
   } else {
     console.log("입력하신 계좌 번호를 찾을 수 없습니다.");
@@ -183,7 +185,6 @@ const withdraw = async function () {
 // * 계좌번호로 검색
 const searchNum = async function () {
   let searchNum = await readLine("- 계좌번호 : ");
-  console.log(searchNum);
   let account = accountRepository.findByNumber(searchNum);
   if (!account) {
     console.log("입력하신 계좌를 찾을 수 없습니다.");
