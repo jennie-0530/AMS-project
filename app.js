@@ -2,7 +2,7 @@ const AccountRepository = require("./AccountRepository");
 const Account = require("./Account");
 const MinusAccount = require("./MinusAccount");
 const readLine = require("./readline");
-const fileExist = require("./fileExist");
+const initializeData = require("./initializeData");
 const fs = require("fs");
 const { createInterface } = require("readline");
 
@@ -11,18 +11,16 @@ const consoleInterface = createInterface({
 });
 let accountRepository = new AccountRepository();
 
-// TODO 마이너스 계좌에 입금, 출금하면 어떻게 할지 처리
-
 // 메뉴 출력
 const printMenu = function () {
   console.log(
-    "--------------------------------------------------------------------"
+    "--------------------------------------------------------------------",
   );
   console.log(
-    "1.계좌등록 | 2.계좌목록 | 3.예금 | 4.출금 | 5.검색 | 6.삭제 | 7.종료"
+    "1.계좌등록 | 2.계좌목록 | 3.예금 | 4.출금 | 5.검색 | 6.삭제 | 7.종료",
   );
   console.log(
-    "--------------------------------------------------------------------"
+    "--------------------------------------------------------------------",
   );
 };
 const accountNumberPattern = /^\d{4}-\d{4}$/;
@@ -63,7 +61,7 @@ const createAccount = async function () {
     accountNum = await readLine("- 계좌번호 (xxxx-xxxx) : ");
     if (!accountNumberPattern.test(accountNum)) {
       console.log(
-        "계좌번호는 '1234-5678'과 같은 형식이어야 합니다. 다시 입력해주세요."
+        "계좌번호는 '1234-5678'과 같은 형식이어야 합니다. 다시 입력해주세요.",
       );
     }
   }
@@ -79,7 +77,7 @@ const createAccount = async function () {
     password = parseInt(await readLine("- 비밀번호 : "));
     if (!passwordPattern.test(password)) {
       console.log(
-        "비밀번호는 4자리 숫자 형식이어야 합니다. 다시 입력해주세요."
+        "비밀번호는 4자리 숫자 형식이어야 합니다. 다시 입력해주세요.",
       );
     }
   }
@@ -115,11 +113,11 @@ const printAllAccounts = function () {
     return;
   }
   console.log(
-    "--------------------------------------------------------------------"
+    "--------------------------------------------------------------------",
   );
   console.log("계좌구분\t계좌번호\t예금주\t금액정보\t");
   console.log(
-    "--------------------------------------------------------------------"
+    "--------------------------------------------------------------------",
   );
   accounts.forEach((account) => {
     const type =
@@ -127,11 +125,11 @@ const printAllAccounts = function () {
 
     if (type === "마이너스 계좌") {
       console.log(
-        `${type}\t${account.number}\t${account.owner}\t대출금액: ${account.rentMoney}원`
+        `${type}\t${account.number}\t${account.owner}\t대출금액: ${account.rentMoney}원`,
       );
     } else {
       console.log(
-        `${type}\t${account.number}\t${account.owner}\t계좌잔액: ${account.balance}원`
+        `${type}\t${account.number}\t${account.owner}\t계좌잔액: ${account.balance}원`,
       );
     }
   });
@@ -146,7 +144,7 @@ const deposit = async function () {
   let balance = accountRepository.getBalance(inputNum);
   if (balance !== null) {
     console.log(
-      `${inputMoney}원이 입금되었습니다. 현재 잔고는 ${balance}원입니다.`
+      `${inputMoney}원이 입금되었습니다. 현재 잔고는 ${balance}원입니다.`,
     );
   } else {
     console.log("입력하신 계좌 번호를 찾을 수 없습니다.");
@@ -161,7 +159,7 @@ const withdraw = async function () {
   let statusCode = accountRepository.withdraw(
     outputNum,
     outputMoney,
-    outputPassword
+    outputPassword,
   );
   let balance = accountRepository.getBalance(outputNum);
 
@@ -177,7 +175,7 @@ const withdraw = async function () {
       break;
     case "SUCCESS":
       console.log(
-        `${outputMoney}원이 출금되었습니다. 현재 잔고는 ${balance}원입니다.`
+        `${outputMoney}원이 출금되었습니다. 현재 잔고는 ${balance}원입니다.`,
       );
   }
 };
@@ -232,16 +230,16 @@ const endApplication = function () {
 
 const app = async function () {
   console.log(
-    `====================================================================`
+    `====================================================================`,
   );
   console.log(
-    `--------------     KOSTA 은행 계좌 관리 프로그램     ---------------`
+    `--------------     KOSTA 은행 계좌 관리 프로그램     ---------------`,
   );
   console.log(
-    `====================================================================`
+    `====================================================================`,
   );
 
-  const data = fileExist();
+  const data = initializeData();
   if (data) {
     accountRepository.accounts = JSON.parse(data.toString());
   }

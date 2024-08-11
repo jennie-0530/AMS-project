@@ -90,7 +90,7 @@ class AccountRepository {
   getTotal() {
     let total = this.accounts.reduce(
       (prev, account) => prev + account.balance,
-      0
+      0,
     );
     return total;
   }
@@ -98,7 +98,7 @@ class AccountRepository {
   getMax() {
     let max = this.accounts.reduce(
       (prev, account) => (prev > account.balance ? prev : account.balance),
-      this.accounts[0].balance
+      this.accounts[0].balance,
     );
     return max;
   }
@@ -106,14 +106,14 @@ class AccountRepository {
   getMin() {
     let min = this.accounts.reduce(
       (prev, account) => (prev < account.balance ? prev : account.balance),
-      this.accounts[0].balance
+      this.accounts[0].balance,
     );
     return min;
   }
 
   rangeSearch(num1, num2) {
     let balance = this.accounts.filter(
-      (account) => account.balance >= num1 && account.balance <= num2
+      (account) => account.balance >= num1 && account.balance <= num2,
     );
     return balance;
   }
