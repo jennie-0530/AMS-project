@@ -1,8 +1,8 @@
 const Account = require("./Account");
 
 class MinusAccount extends Account {
-  constructor(number, owner, password, rentMoney, balance) {
-    super(number, owner, password, balance);
+  constructor(number, owner, password, rentMoney) {
+    super(number, owner, password);
     this.rentMoney = rentMoney;
   }
 }

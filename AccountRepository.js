@@ -3,6 +3,9 @@
  * 작성자 : 김준경
  */
 
+const Account = require("./Account");
+const MinusAccount = require("./MinusAccount");
+
 class AccountRepository {
   constructor() {
     this.accounts = []; // this.accounts가 프로퍼티 이름.
@@ -20,13 +23,22 @@ class AccountRepository {
       this.accounts.push(account);
       return true;
     }
-    1;
+
     return false;
   }
 
   deposit(num, money) {
     const account = this.findByNumber(num);
-    if (account) {
+    // * 마이너스 계좌
+    if (num instanceof MinusAccount) {
+      // if (account.rentMoney === 0) {
+      //   Account = MinusAccount;
+      //   return Account;
+      // } else
+      if (account.rentMoney) {
+        return (account.rentMoney -= num);
+      }
+    } else if (account) {
       return (account.balance += money);
     } else return false;
   }
@@ -90,7 +102,7 @@ class AccountRepository {
   getTotal() {
     let total = this.accounts.reduce(
       (prev, account) => prev + account.balance,
-      0,
+      0
     );
     return total;
   }
@@ -98,7 +110,7 @@ class AccountRepository {
   getMax() {
     let max = this.accounts.reduce(
       (prev, account) => (prev > account.balance ? prev : account.balance),
-      this.accounts[0].balance,
+      this.accounts[0].balance
     );
     return max;
   }
@@ -106,14 +118,14 @@ class AccountRepository {
   getMin() {
     let min = this.accounts.reduce(
       (prev, account) => (prev < account.balance ? prev : account.balance),
-      this.accounts[0].balance,
+      this.accounts[0].balance
     );
     return min;
   }
 
   rangeSearch(num1, num2) {
     let balance = this.accounts.filter(
-      (account) => account.balance >= num1 && account.balance <= num2,
+      (account) => account.balance >= num1 && account.balance <= num2
     );
     return balance;
   }

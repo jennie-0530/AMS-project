@@ -14,13 +14,13 @@ let accountRepository = new AccountRepository();
 // 메뉴 출력
 const printMenu = function () {
   console.log(
-    "--------------------------------------------------------------------",
+    "--------------------------------------------------------------------"
   );
   console.log(
-    "1.계좌등록 | 2.계좌목록 | 3.예금 | 4.출금 | 5.검색 | 6.삭제 | 7.종료",
+    "1.계좌등록 | 2.계좌목록 | 3.예금 | 4.출금 | 5.검색 | 6.삭제 | 7.종료"
   );
   console.log(
-    "--------------------------------------------------------------------",
+    "--------------------------------------------------------------------"
   );
 };
 const accountNumberPattern = /^\d{4}-\d{4}$/;
@@ -61,7 +61,7 @@ const createAccount = async function () {
     accountNum = await readLine("- 계좌번호 (xxxx-xxxx) : ");
     if (!accountNumberPattern.test(accountNum)) {
       console.log(
-        "계좌번호는 '1234-5678'과 같은 형식이어야 합니다. 다시 입력해주세요.",
+        "계좌번호는 '1234-5678'과 같은 형식이어야 합니다. 다시 입력해주세요."
       );
     }
   }
@@ -77,7 +77,7 @@ const createAccount = async function () {
     password = parseInt(await readLine("- 비밀번호 : "));
     if (!passwordPattern.test(password)) {
       console.log(
-        "비밀번호는 4자리 숫자 형식이어야 합니다. 다시 입력해주세요.",
+        "비밀번호는 4자리 숫자 형식이어야 합니다. 다시 입력해주세요."
       );
     }
   }
@@ -113,11 +113,11 @@ const printAllAccounts = function () {
     return;
   }
   console.log(
-    "--------------------------------------------------------------------",
+    "--------------------------------------------------------------------"
   );
   console.log("계좌구분\t계좌번호\t예금주\t금액정보\t");
   console.log(
-    "--------------------------------------------------------------------",
+    "--------------------------------------------------------------------"
   );
   accounts.forEach((account) => {
     const type =
@@ -125,11 +125,11 @@ const printAllAccounts = function () {
 
     if (type === "마이너스 계좌") {
       console.log(
-        `${type}\t${account.number}\t${account.owner}\t대출금액: ${account.rentMoney}원`,
+        `${type}\t${account.number}\t${account.owner}\t대출금액: ${account.rentMoney}원`
       );
     } else {
       console.log(
-        `${type}\t${account.number}\t${account.owner}\t계좌잔액: ${account.balance}원`,
+        `${type}\t${account.number}\t${account.owner}\t계좌잔액: ${account.balance}원`
       );
     }
   });
@@ -141,15 +141,58 @@ const deposit = async function () {
   let inputNum = await readLine("- 계좌번호 : ");
   let inputMoney = parseInt(await readLine("- 입금액 : "));
   accountRepository.deposit(inputNum, inputMoney);
+  let account = accountRepository.findByNumber(inputNum);
+  // let balance = accountRepository.getBalance(inputNum);
+  // if (balance !== null) {
+  //   console.log(
+  //     `${inputMoney}원이 입금되었습니다. 현재 잔고는 ${balance}원입니다.`
+  //   );
+  // } else {
+  //   console.log("입력하신 계좌 번호를 찾을 수 없습니다.");
+  // }
   let balance = accountRepository.getBalance(inputNum);
-  if (balance !== null) {
+
+  if (inputNum instanceof Account) {
     console.log(
-      `${inputMoney}원이 입금되었습니다. 현재 잔고는 ${balance}원입니다.`,
+      `${inputMoney}원이 입금되었습니다. 현재 잔고는 ${balance}원입니다.`
     );
   } else {
-    console.log("입력하신 계좌 번호를 찾을 수 없습니다.");
+    if (account.rentMoney <= inputMoney) {
+      console.log(account);
+      let balance = inputMoney - account.rentMoney;
+      account.rentMoney = 0;
+      account = new Account(inputNum, account.owner, account.password, balance);
+      console.log(account);
+      console.log(
+        "대출금을 모두 상환하셨습니다. 마이너스 계좌에서 입출금 계좌로 변경됩니다."
+      );
+    }
   }
+  return account;
 };
+
+/*
+출력결과 => 입출금 클래스를 account로 할당하기 전에 account 출력했을 때
+객체 앞에 아무런 클래스도 나타나지 않음. 즉 마이너스 클래스의 인스턴스가 아니라는 뜻
+- 계좌번호 : 1234-5678
+- 입금액 : 100
+{
+  number: '1234-5678',
+  owner: '김준경',
+  password: 1234,
+  balance: 100,
+  rentMoney: 100
+}
+Account {
+  number: '1234-5678',
+  owner: '김준경',
+  password: 1234,
+  balance: 0
+}
+대출금을 모두 상환하셨습니다. 마이너스 계좌에서 입출금 계좌로 변경됩니다.
+*/
+
+// `${inputMoney}원을 상환하셨습니다. 현재 대출 잔액은 ${account.rentMoney}원입니다.`;
 
 // * 출금
 const withdraw = async function () {
@@ -159,7 +202,7 @@ const withdraw = async function () {
   let statusCode = accountRepository.withdraw(
     outputNum,
     outputMoney,
-    outputPassword,
+    outputPassword
   );
   let balance = accountRepository.getBalance(outputNum);
 
@@ -175,7 +218,7 @@ const withdraw = async function () {
       break;
     case "SUCCESS":
       console.log(
-        `${outputMoney}원이 출금되었습니다. 현재 잔고는 ${balance}원입니다.`,
+        `${outputMoney}원이 출금되었습니다. 현재 잔고는 ${balance}원입니다.`
       );
   }
 };
@@ -230,13 +273,13 @@ const endApplication = function () {
 
 const app = async function () {
   console.log(
-    `====================================================================`,
+    `====================================================================`
   );
   console.log(
-    `--------------     KOSTA 은행 계좌 관리 프로그램     ---------------`,
+    `--------------     KOSTA 은행 계좌 관리 프로그램     ---------------`
   );
   console.log(
-    `====================================================================`,
+    `====================================================================`
   );
 
   const data = initializeData();
