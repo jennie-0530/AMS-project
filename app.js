@@ -284,9 +284,11 @@ const app = async function () {
 
   const data = initializeData();
   if (data) {
-    accountRepository.accounts = JSON.parse(data.toString());
+    accountRepository.accounts = JSON.parse(data);
   }
   let running = true;
+
+  //TODO JSON 파일에서 가져온 정보들을 mapping 해서 각 계좌 정보들을 Account 클래스의 인스턴스로 생성 (입출금, 마이너스 인지 확인)
 
   while (running) {
     printMenu();
