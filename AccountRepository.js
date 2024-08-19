@@ -4,7 +4,6 @@
  */
 
 // TODO 마이너스 계좌에서 대출금 다 갚아도 계좌목록 출력하면 계좌구분이 입출금 계좌로 안변함
-// TODO AccountRepository에 모든 메소드 다 정의하는 것보다는 Account 클래스에 정의한 후, MinusAccount에서 상속받아 사용?
 
 const Account = require("./Account");
 const MinusAccount = require("./MinusAccount");
@@ -33,7 +32,7 @@ class AccountRepository {
   deposit(num, money) {
     const account = this.findByNumber(num);
     // * 마이너스 계좌
-    if (num instanceof MinusAccount) {
+    if (account instanceof MinusAccount) {
       if (account.rentMoney) {
         return (account.rentMoney -= num);
       }
@@ -100,7 +99,7 @@ class AccountRepository {
   getTotal() {
     let total = this.accounts.reduce(
       (prev, account) => prev + account.balance,
-      0
+      0,
     );
     return total;
   }
@@ -108,7 +107,7 @@ class AccountRepository {
   getMax() {
     let max = this.accounts.reduce(
       (prev, account) => (prev > account.balance ? prev : account.balance),
-      this.accounts[0].balance
+      this.accounts[0].balance,
     );
     return max;
   }
@@ -116,14 +115,14 @@ class AccountRepository {
   getMin() {
     let min = this.accounts.reduce(
       (prev, account) => (prev < account.balance ? prev : account.balance),
-      this.accounts[0].balance
+      this.accounts[0].balance,
     );
     return min;
   }
 
   rangeSearch(num1, num2) {
     let balance = this.accounts.filter(
-      (account) => account.balance >= num1 && account.balance <= num2
+      (account) => account.balance >= num1 && account.balance <= num2,
     );
     return balance;
   }
