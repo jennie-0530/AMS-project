@@ -24,6 +24,7 @@ class AccountRepository {
     if (this.accounts.indexOf(account) === -1) {
       this.accounts.push(account);
       return true;
+      // new Account로 생성?
     }
 
     return false;
@@ -33,6 +34,8 @@ class AccountRepository {
     const account = this.findByNumber(num);
     // * 마이너스 계좌
     if (account instanceof MinusAccount) {
+      // num instanceof MinusAccount로 검사하는 게 아니라 account instanceof MinusAccount로 검사해야 함.
+      // num은 계좌 번호를 나타내는 문자열이기 때문에 num으로 검사하면 결과는 항상 false일 수 밖에 없음 => 마이너스 통장의 대출잔액을 다 상환해도 입출금 계좌로 전환되지 않은 이유
       if (account.rentMoney) {
         return (account.rentMoney -= num);
       }
