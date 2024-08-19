@@ -47,14 +47,30 @@ class AccountRepository {
   withdraw(num, money, password) {
     let account = this.findByNumber(num);
     let limit = 3000000;
+
+    if (!account) {
+      return "ACCOUNT_NOT_FOUND";
+    } else if (password !== account.password) {
+      return "INVALID_PASSWORD";
+    }
+
     if (account instanceof MinusAccount) {
       if (money > limit) {
         return "EXCEED_LIMIT";
       } else {
         limit -= money;
-        money += money;
+        account.rentMoney += money;
+        let index = this.accounts.findIndex((acc) => acc.number === num);
+        this.accounts[index] = account; // 업데이트된 account를 배열에 반영
         return "SUCCESS_LOAN";
       }
+    } else if (account.balance < money) {
+      return "INSUFFICIENT_BALANCE";
+    } else {
+      account.balance -= money;
+      let index = this.accounts.findIndex((acc) => acc.number === num);
+      this.accounts[index] = account;
+      return "SUCCESS";
     }
   }
   deleteAccount(num, password) {
@@ -78,16 +94,24 @@ class AccountRepository {
     let index = this.accounts.findIndex((account) => account.number === num);
     let account = this.accounts[index];
     // ! 어떤 클래스의 인스턴스인지 구분하고, 해당 클래스의 인스턴스로 생성해주는 작업
-    if (account.rentMoney) {
+    if (!account) {
+      return null; // 계좌를 찾지 못한 경우 null 반환
+    }
+    if (account.rentMoney !== undefined) {
       // 마이너스 계좌이면
       return new MinusAccount(
-        num,
+        account.number,
         account.owner,
         account.password,
         account.rentMoney,
       );
     } else {
-      return Account(num, account.owner, account.password, account.balance);
+      return new Account(
+        account.number,
+        account.owner,
+        account.password,
+        account.balance,
+      );
     }
   }
 

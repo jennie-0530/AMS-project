@@ -171,26 +171,6 @@ const deposit = async function () {
   return account;
 };
 
-/*
-출력결과 => 입출금 클래스를 account로 할당하기 전에 account 출력했을 때
-객체 앞에 아무런 클래스도 나타나지 않음. 즉 마이너스 클래스의 인스턴스가 아니라는 뜻
-- 계좌번호 : 1234-5678
-- 입금액 : 100
-{
-  number: '1234-5678',
-  owner: '김준경',
-  password: 1234,
-  balance: 100,
-  rentMoney: 100
-}
-Account {
-  number: '1234-5678',
-  owner: '김준경',
-  password: 1234,
-  balance: 0
-}
-*/
-
 // * 출금
 const withdraw = async function () {
   let outputNum = await readLine("- 계좌번호 : ");
@@ -202,39 +182,33 @@ const withdraw = async function () {
     outputPassword,
   );
   let account = accountRepository.findByNumber(outputNum);
-  let balance = accountRepository.getBalance(outputNum);
-  console.log(account);
+  let balance = account ? account.balance : null;
 
-  if (account instanceof Account) {
-    let limit = 3000000; // 대출한도 : 300만원
-    if (outputMoney > limit) {
+  switch (statusCode) {
+    case "ACCOUNT_NOT_FOUND":
+      console.log("입력하신 계좌를 찾을 수 없습니다.");
+      break;
+    case "INSUFFICIENT_BALANCE":
+      console.log("잔액이 부족합니다.");
+      break;
+    case "INVALID_PASSWORD":
+      console.log("비밀번호가 틀렸습니다.");
+      break;
+
+    case "EXCEED_LIMIT":
+      console.log("대출 가능한 금액을 초과했습니다.");
+      break;
+    case "SUCCESS_LOAN":
+      console.log();
       console.log(
-        "대출 한도는 300만원입니다. 그 이상의 금액은 대출이 불가능합니다.",
+        `대출이 승인되었습니다. 현재 대출 금액은 ${account.rentMoney}원입니다.`,
       );
-    } else if (outputMoney <= limit) {
-      if (account.rentMoney + outputMoney <= limit) {
-        account.rentMoney += outputMoney;
-        console.log(
-          `${outputMoney}원을 대출합니다. 현재 대출 금액은 총 ${account.rentMoneys}원입니다.`,
-        );
-      }
-    }
-  } else {
-    switch (statusCode) {
-      case "ACCOUNT_NOT_FOUND":
-        console.log("입력하신 계좌를 찾을 수 없습니다.");
-        break;
-      case "INSUFFICIENT_BALANCE":
-        console.log("잔액이 부족합니다.");
-        break;
-      case "INVALID_PASSWORD":
-        console.log("비밀번호가 틀렸습니다.");
-        break;
-      case "SUCCESS":
-        console.log(
-          `${outputMoney}원이 출금되었습니다. 현재 잔고는 ${balance}원입니다.`,
-        );
-    }
+      break;
+    case "SUCCESS":
+      console.log(
+        `${outputMoney}원이 출금되었습니다. 현재 잔고는 ${balance}원입니다.`,
+      );
+      break;
   }
 };
 
@@ -247,11 +221,9 @@ const searchNum = async function () {
   } else {
     console.log(`계좌번호: ${account.number}`);
     console.log(`예금주: ${account.owner}`);
-    console.log(`잔액: ${account.balance}원`);
-  }
-
-  if (account instanceof MinusAccount) {
-    console.log(`대출금액: ${account.rentMoney}원`);
+    account instanceof MinusAccount
+      ? console.log(`대출금액: ${account.rentMoney}`)
+      : console.log(`잔액: ${account.balance}원`);
   }
 };
 
