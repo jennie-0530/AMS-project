@@ -45,19 +45,17 @@ class AccountRepository {
   }
 
   withdraw(num, money, password) {
-    const account = this.findByNumber(num);
-
-    if (!account) {
-      return "ACCOUNT_NOT_FOUND";
+    let account = this.findByNumber(num);
+    let limit = 3000000;
+    if (account instanceof MinusAccount) {
+      if (money > limit) {
+        return "EXCEED_LIMIT";
+      } else {
+        limit -= money;
+        money += money;
+        return "SUCCESS_LOAN";
+      }
     }
-    if (account.balance < money) {
-      return "INSUFFICIENT_BALANCE";
-    }
-    if (password !== account.password) {
-      return "INVALID_PASSWORD";
-    }
-    account.balance -= money;
-    return "SUCCESS";
   }
   deleteAccount(num, password) {
     let index = this.accounts.findIndex((account) => num === account.number);
@@ -78,7 +76,19 @@ class AccountRepository {
 
   findByNumber(num) {
     let index = this.accounts.findIndex((account) => account.number === num);
-    return this.accounts[index];
+    let account = this.accounts[index];
+    // ! 어떤 클래스의 인스턴스인지 구분하고, 해당 클래스의 인스턴스로 생성해주는 작업
+    if (account.rentMoney) {
+      // 마이너스 계좌이면
+      return new MinusAccount(
+        num,
+        account.owner,
+        account.password,
+        account.rentMoney,
+      );
+    } else {
+      return Account(num, account.owner, account.password, account.balance);
+    }
   }
 
   findByName(name) {
