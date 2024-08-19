@@ -11,7 +11,6 @@ const consoleInterface = createInterface({
 });
 let accountRepository = new AccountRepository();
 
-// 메뉴 출력
 const printMenu = function () {
   console.log(
     "--------------------------------------------------------------------",
@@ -136,7 +135,6 @@ const printAllAccounts = function () {
 };
 
 // * 입금
-
 const deposit = async function () {
   let inputNum = await readLine("- 계좌번호 : ");
   let inputMoney = parseInt(await readLine("- 입금액 : "));
@@ -158,7 +156,6 @@ const deposit = async function () {
         account.password,
         balance,
       );
-      //! 대출금을 상환했는데도 입출금 계좌로 안바뀌는 이유 : 대출금을 다 갚으면 새로운 입출금 계좌를 생성해서 기존의 마이너스 계좌와 교체해줘야 하는데 이 작업을 안했기 때문.
       let index = accountRepository.accounts.findIndex(
         (account) => account.number === inputNum,
       );
@@ -222,7 +219,7 @@ const searchNum = async function () {
     console.log(`계좌번호: ${account.number}`);
     console.log(`예금주: ${account.owner}`);
     account instanceof MinusAccount
-      ? console.log(`대출금액: ${account.rentMoney}`)
+      ? console.log(`대출금액: ${account.rentMoney}원`)
       : console.log(`잔액: ${account.balance}원`);
   }
 };
@@ -283,16 +280,16 @@ const app = async function () {
       case 1:
         await createAccount();
         break;
-      case 2: // 전체계좌 목록 출력
+      case 2:
         await printAllAccounts();
         break;
-      case 3: // 입금
+      case 3:
         await deposit();
         break;
-      case 4: // 출금
+      case 4:
         await withdraw();
         break;
-      case 5: // 계좌번호로 검색
+      case 5:
         await searchNum();
         break;
       case 6:
